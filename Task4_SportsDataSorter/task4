@@ -1,1 +1,219 @@
+#include <stdio.h>
+#include <string.h>
 
+#define MAX 10
+
+
+typedef struct
+{
+    int id;
+    char name[50];
+    float strikeRate;
+    int boundaries;
+} Player;
+
+
+Player players[MAX] =
+{
+    {1,"Rinku Singh",149.5,38},
+    {2,"Andre Russell",174.2,46},
+    {3,"Sunil Narine",181.7,35},
+    {4,"Venkatesh Iyer",145.3,41},
+    {5,"Ajinkya Rahane",132.6,29},
+    {6,"Quinton de Kock",139.4,34},
+    {7,"Ramandeep Singh",168.1,22},
+    {8,"Moeen Ali",137.5,18},
+    {9,"Harshit Rana",110.2,8},
+    {10,"Varun Chakravarthy",98.6,4}
+};
+
+
+void displayPlayers(Player arr[], int n)
+{
+    int i;
+
+    printf("\n-------------------------------------------------------------\n");
+    printf("%-5s %-25s %-15s %-12s\n",
+           "ID","Player","Strike Rate","Boundaries");
+    printf("-------------------------------------------------------------\n");
+
+    for(i=0;i<n;i++)
+    {
+        printf("%-5d %-25s %-15.2f %-12d\n",
+               arr[i].id,
+               arr[i].name,
+               arr[i].strikeRate,
+               arr[i].boundaries);
+    }
+
+    printf("-------------------------------------------------------------\n");
+}
+
+
+void swap(Player *a, Player *b)
+{
+    Player temp = *a;
+    *a = *b;
+    *b = temp;
+}
+
+
+int compareStrikeRate(Player a, Player b)
+{
+    return a.strikeRate >= b.strikeRate;
+}
+
+int compareBoundaries(Player a, Player b)
+{
+    return a.boundaries >= b.boundaries;
+}
+
+int compareID(Player a, Player b)
+{
+    return a.id <= b.id;   
+}
+
+int partition(Player arr[], int low, int high,
+              int (*compare)(Player, Player))
+{
+    Player pivot = arr[high];
+    int i = low - 1;
+
+    for(int j = low; j < high; j++)
+    {
+        if(compare(arr[j], pivot))
+        {
+            i++;
+            swap(&arr[i], &arr[j]);
+        }
+    }
+
+    swap(&arr[i + 1], &arr[high]);
+    return i + 1;
+}
+
+
+void quickSort(Player arr[], int low, int high,
+               int (*compare)(Player, Player))
+{
+    if(low < high)
+    {
+        int pi = partition(arr, low, high, compare);
+
+        quickSort(arr, low, pi - 1, compare);
+        quickSort(arr, pi + 1, high, compare);
+    }
+}
+void merge(Player arr[], int left, int mid, int right,
+           int (*compare)(Player, Player))
+{
+    int n1 = mid - left + 1;
+    int n2 = right - mid;
+
+    Player L[n1], R[n2];
+
+    for(int i=0;i<n1;i++)
+        L[i]=arr[left+i];
+
+    for(int j=0;j<n2;j++)
+        R[j]=arr[mid+1+j];
+
+    int i=0,j=0,k=left;
+
+    while(i<n1 && j<n2)
+    {
+        if(compare(L[i],R[j]))
+            arr[k++]=L[i++];
+        else
+            arr[k++]=R[j++];
+    }
+
+    while(i<n1)
+        arr[k++]=L[i++];
+
+    while(j<n2)
+        arr[k++]=R[j++];
+}
+
+void mergeSort(Player arr[], int left, int right,
+               int (*compare)(Player, Player))
+{
+    if(left<right)
+    {
+        int mid=(left+right)/2;
+
+        mergeSort(arr,left,mid,compare);
+        mergeSort(arr,mid+1,right,compare);
+
+        merge(arr,left,mid,right,compare);
+    }
+}
+int main()
+{
+    int choice;
+
+    do
+    {
+        printf("\n==============================");
+        printf("\n SPORTS DATA SORTER");
+        printf("\n==============================");
+
+        printf("\n1. Display Players");
+        printf("\n2. Quick Sort by Strike Rate");
+        printf("\n3. Quick Sort by Boundaries");
+        printf("\n4. Merge Sort by Strike Rate");
+        printf("\n5. Merge Sort by Boundaries");
+        printf("\n6. Sort by Player ID");
+        printf("\n7. Exit");
+
+        printf("\n\nEnter Choice : ");
+        scanf("%d",&choice);
+
+        switch(choice)
+        {
+            case 1:
+                displayPlayers(players,MAX);
+                break;
+
+            case 2:
+                quickSort(players,0,MAX-1,compareStrikeRate);
+                printf("\nSorted by Strike Rate (Quick Sort)\n");
+                displayPlayers(players,MAX);
+                break;
+
+            case 3:
+                quickSort(players,0,MAX-1,compareBoundaries);
+                printf("\nSorted by Boundaries (Quick Sort)\n");
+                displayPlayers(players,MAX);
+                break;
+
+            case 4:
+                mergeSort(players,0,MAX-1,compareStrikeRate);
+                printf("\nSorted by Strike Rate (Merge Sort)\n");
+                displayPlayers(players,MAX);
+                break;
+
+            case 5:
+                mergeSort(players,0,MAX-1,compareBoundaries);
+                printf("\nSorted by Boundaries (Merge Sort)\n");
+                displayPlayers(players,MAX);
+                break;
+
+            case 6:
+                mergeSort(players,0,MAX-1,compareID);
+                printf("\nSorted by Player ID\n");
+                displayPlayers(players,MAX);
+                break;
+
+            case 7:
+                printf("\nThank You!\n");
+                break;
+
+            default:
+                printf("\nInvalid Choice");
+        }
+
+    }while(choice!=7);
+
+    return 0;
+}

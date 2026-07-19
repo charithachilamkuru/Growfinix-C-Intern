@@ -1,1 +1,81 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
+#include <sys/wait.h>
 
+#define MAX_INPUT 1024
+#define MAX_ARGS 100
+
+int main()
+{
+    char input[MAX_INPUT];
+    char *args[MAX_ARGS];
+
+    while (1)
+    {
+        printf("my_shell> ");
+        fflush(stdout);
+
+        // Read command from user
+        if (fgets(input, MAX_INPUT, stdin) == NULL)
+        {
+            break;
+        }
+
+        // Remove newline character
+        input[strcspn(input, "\n")] = 0;
+
+        // Exit command
+        if (strcmp(input, "exit") == 0)
+        {
+            printf("Exiting shell...\n");
+            break;
+        }
+
+        // Split command into arguments
+        int i = 0;
+        char *token = strtok(input, " ");
+
+        while (token != NULL && i < MAX_ARGS - 1)
+        {
+            args[i] = token;
+            i++;
+            token = strtok(NULL, " ");
+        }
+
+        args[i] = NULL;
+
+        if (args[0] == NULL)
+        {
+            continue;
+        }
+
+        // Create child process
+        pid_t pid = fork();
+
+        if (pid < 0)
+        {
+            perror("Fork failed");
+            exit(1);
+        }
+
+        // Child process
+        else if (pid == 0)
+        {
+            execvp(args[0], args);
+
+            // If execvp fails
+            perror("Command not found");
+            exit(1);
+        }
+
+        // Parent process
+        else
+        {
+            wait(NULL);
+        }
+    }
+
+    return 0;
+}
